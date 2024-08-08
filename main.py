@@ -6,7 +6,7 @@ import pandas as pd
 from datetime import datetime
 
 # Cargar el modelo de machine learning
-model = joblib.load('./taxi_demand_model.joblib')
+model = joblib.load('taxi_demand_model.joblib')
 
 app = FastAPI()
 
