@@ -39,7 +39,7 @@ def prediccion_demanda_taxis(city: str = Query(..., description="Nombre de la ci
     prediction = model.predict(input_data)
     
     # Obtener la fecha actual
-    fecha_consulta = datetime.now().strftime('%Y-%m-%d)
+    fecha_consulta = datetime.now().strftime('%Y-%m-%d')
 
     return {
         "weather_data": {
