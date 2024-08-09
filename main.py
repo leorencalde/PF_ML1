@@ -1,55 +1,51 @@
-import requests
 from fastapi import FastAPI, Query
-from pydantic import BaseModel
-import joblib
+from pydantic import BaseModel  # Asegúrate de importar BaseModel
 import pandas as pd
-from datetime import datetime
+import joblib
+
+app = FastAPI()
 
 # Cargar el modelo de machine learning
 model = joblib.load('taxi_demand_model.joblib')
 
-app = FastAPI()
+@app.get("/get_weather")
+def get_weather(date: str = Query(..., description="Fecha para obtener datos climáticos en formato YYYY-MM-DD")):
+    # Cargar los datos del clima desde un archivo Parquet
+    df_clima = pd.read_parquet('dataset_clima_hoy.parquet')
 
-# Definir el esquema de la solicitud
+    # Filtrar los datos para la fecha específica
+    clima_seleccionado = df_clima[df_clima['date'] == date]
+
+    # Verificar si existen datos para la fecha especificada
+    if clima_seleccionado.empty:
+        return {"error": "No hay datos disponibles para la fecha proporcionada."}
+
+    # Seleccionar las columnas relevantes
+    clima_resultado = clima_seleccionado[['date', 'weather_code', 'temperature_2m_max', 'temperature_2m_min', 
+                                          'rain_sum', 'snowfall_sum', 'precipitation_hours', 'wind_speed_10m_max']]
+
+    # Convertir el DataFrame a diccionario para retornar como JSON
+    return clima_resultado.to_dict(orient="records")
+
+# Esquema de los datos climáticos para el POST
 class WeatherData(BaseModel):
-    city: str
+    weather_code: float
+    temperature_2m_max: float
+    temperature_2m_min: float
+    rain_sum: float
+    snowfall_sum: float
+    precipitation_hours: float
+    wind_speed_10m_max: float
 
-@app.get("/predict")
-def prediccion_demanda_taxis(city: str = Query(..., description="Nombre de la ciudad para obtener datos climáticos")):
-    # Obtener los datos del clima de la API de OpenWeather
-    api_key = "b0246ce45acfb5b01b3600e57b12b1a9"  # Reemplaza esto con tu clave de API real
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
-    response = requests.get(url)
-    weather_data = response.json()
-    
-    temp = weather_data['main']['temp']
-    humedad = weather_data['main']['humidity']
-    viento = weather_data['wind']['speed']
-    precip = weather_data.get('rain', {}).get('1h', 0)
-    
+@app.post("/predict")
+def predict_demand(data: WeatherData):
     # Crear un DataFrame a partir de los datos de entrada
-    input_data = pd.DataFrame([{
-        'temp': temp,
-        'humedad': humedad,
-        'viento': viento,
-        'precip': precip
-    }])
+    input_data = pd.DataFrame([data.dict()])
 
     # Realizar la predicción
     prediction = model.predict(input_data)
     
-    # Obtener la fecha actual
-    fecha_consulta = datetime.now().strftime('%Y-%m-%d')
-
     return {
-        "weather_data": {
-            "city": city,
-            "date_of_query": fecha_consulta,
-            "temp": temp,
-            "humidity": humedad,
-            "wind_speed": viento,
-            "precipitation": precip
-        },
         "predicted_demand": prediction[0]
     }
 
