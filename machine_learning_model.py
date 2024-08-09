@@ -8,8 +8,8 @@ from sklearn.ensemble import RandomForestRegressor
 import joblib
 
 # Cargar los datasets
-df_taxis = pd.read_parquet('dataset_taxis.parquet')
-df_clima = pd.read_parquet('dataset_clima.parquet')
+df_taxis = pd.read_parquet('dataset_clean/dataset_taxis.parquet')
+df_clima = pd.read_parquet('dataset_clean/dataset_clima.parquet')
 
 # Asegúrate de que ambas columnas 'date' estén en el formato datetime
 df_taxis['date'] = pd.to_datetime(df_taxis['date'])
