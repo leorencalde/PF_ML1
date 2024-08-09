@@ -11,7 +11,7 @@ model = joblib.load('taxi_demand_model.joblib')
 @app.get("/get_weather")
 def get_weather(date: str = Query(..., description="Fecha para obtener datos climáticos en formato YYYY-MM-DD")):
     # Cargar los datos del clima desde un archivo Parquet
-    df_clima = pd.read_parquet('dataset_clima_hoy.parquet')
+    df_clima = pd.read_parquet('')
 
     # Filtrar los datos para la fecha específica
     clima_seleccionado = df_clima[df_clima['date'] == date]
