@@ -23,7 +23,7 @@ def get_weather(date: str = Query(..., description="Fecha para obtener datos cli
     # Seleccionar las columnas relevantes
     clima_resultado = clima_seleccionado[['date', 'weather_code', 'temperature_2m_max', 'temperature_2m_min', 
                                           'rain_sum', 'snowfall_sum', 'precipitation_hours', 'wind_speed_10m_max']]
-
+    
     # Convertir el DataFrame a diccionario para retornar como JSON
     return clima_resultado.to_dict(orient="records")
 
